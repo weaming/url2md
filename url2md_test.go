@@ -91,3 +91,70 @@ func TestHTMLToMarkdownEmpty(t *testing.T) {
 		t.Errorf("期望空输出，实际 %q", md)
 	}
 }
+
+const wechatHTML = `<!DOCTYPE html>
+<html>
+<head>
+	<title>页面标题</title>
+	<meta property="og:title" content="og 标题">
+	<meta property="og:article:author" content="og 作者">
+</head>
+<body>
+	<h1 id="activity-name">Super-agent 设计探索</h1>
+	<a id="js_name">某某团队</a>
+	<div id="js_content">
+		<p><span>第一段正文，说明背景。</span></p>
+		<h1><span>这是一段被写成标题的长正文，长度明显超过四十个字，用来验证标题降级逻辑是否生效，应该被输出成普通段落而不是 Markdown 标题。</span></h1>
+		<p><img data-src="https://mmbiz.qpic.cn/sz_mmbiz_jpg/cover/640?wx_fmt=jpeg" src="data:image/svg+xml;charset=utf8,%3Csvg%3E"></p>
+		<script>var noise = "不该出现";</script>
+	</div>
+</body>
+</html>`
+
+func TestParseWechat(t *testing.T) {
+	page, err := Parse(wechatHTML, "https://mp.weixin.qq.com/s/abcdefg")
+	if err != nil {
+		t.Fatalf("Parse 失败: %v", err)
+	}
+
+	if page.Title != "Super-agent 设计探索" {
+		t.Errorf("Title = %q", page.Title)
+	}
+	if page.Author != "某某团队" {
+		t.Errorf("Author = %q", page.Author)
+	}
+	if !strings.Contains(page.Text, "第一段正文") {
+		t.Errorf("Text 缺少正文: %q", page.Text)
+	}
+	if strings.Contains(page.Text, "不该出现") {
+		t.Errorf("Text 包含 script 内容: %q", page.Text)
+	}
+
+	md, err := page.Markdown()
+	if err != nil {
+		t.Fatalf("Markdown 失败: %v", err)
+	}
+
+	if !strings.Contains(md, "![](https://mmbiz.qpic.cn/sz_mmbiz_jpg/cover/640?wx_fmt=jpeg)") {
+		t.Errorf("Markdown 未使用 data-src 图片:\n%s", md)
+	}
+	if strings.Contains(md, "# 这是一段被写成标题的长正文") {
+		t.Errorf("过长的标题未降级:\n%s", md)
+	}
+	if !strings.Contains(md, "这是一段被写成标题的长正文") {
+		t.Errorf("长正文丢失:\n%s", md)
+	}
+}
+
+func TestParseWechatFallback(t *testing.T) {
+	// 缺少 #js_content（如文章被删除）时退回 readability，不应报错
+	rawHTML := `<html><head><title>提示</title></head><body><p>该内容已被发布者删除</p></body></html>`
+
+	page, err := Parse(rawHTML, "https://mp.weixin.qq.com/s/abcdefg")
+	if err != nil {
+		t.Fatalf("Parse 失败: %v", err)
+	}
+	if !strings.Contains(page.Text, "该内容已被发布者删除") {
+		t.Errorf("Text = %q", page.Text)
+	}
+}

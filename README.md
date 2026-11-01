@@ -15,6 +15,9 @@ fmt.Println(page.Title, page.Text, page.HTML)
 - `Parse(html, url)`：不联网，从已有 HTML 解析
 - `HTMLToMarkdown(html)`：把 HTML 片段转 Markdown
 
+正文提取以站点规则（`rules.go`）优先，未命中站点时退回 go-readability。
+目前内置：微信公众号 `mp.weixin.qq.com`（`#js_content`、懒加载图片、作者与标题）。
+
 ## 命令行
 
 ```bash

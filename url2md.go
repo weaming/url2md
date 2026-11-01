@@ -10,6 +10,7 @@ type Page struct {
 	URL string
 
 	Title       string
+	Author      string
 	Description string
 	SiteName    string
 	Keywords    []string

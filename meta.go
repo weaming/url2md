@@ -18,6 +18,7 @@ const (
 	ogKeywords    = "og:keywords"
 	ogImageWidth  = "og:image:width"
 	ogImageHeight = "og:image:height"
+	ogAuthor      = "og:article:author"
 )
 
 var spaceRegexp = regexp.MustCompile(`\s+`)
@@ -39,6 +40,8 @@ func (p *Page) fillMeta(doc *goquery.Document, baseURL *url.URL) {
 			p.ImageURL = content
 		case ogKeywords:
 			p.Keywords = splitKeywords(content)
+		case ogAuthor:
+			p.Author = cleanText(content)
 		case ogImageWidth:
 			p.ImageWidth, _ = strconv.Atoi(strings.TrimSpace(content))
 		case ogImageHeight:
