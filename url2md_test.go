@@ -112,7 +112,9 @@ const wechatHTML = `<!DOCTYPE html>
 	</div>
 	<script>
 		var ct = "1793449787";
+		var msg_source_url = 'https://github.com/example/repo';
 		window.ip_wording = { countryName: '中国', provinceName: '浙江' };
+		modify_time: '1793467167' * 1,
 	</script>
 </body>
 </html>`
@@ -137,6 +139,12 @@ func TestParseWechat(t *testing.T) {
 	}
 	if page.IPLocation != "浙江" {
 		t.Errorf("IPLocation = %q", page.IPLocation)
+	}
+	if page.ModifiedTime != "2026年11月01日" {
+		t.Errorf("ModifiedTime = %q", page.ModifiedTime)
+	}
+	if page.SourceURL != "https://github.com/example/repo" {
+		t.Errorf("SourceURL = %q", page.SourceURL)
 	}
 	if len(page.Labels) != 1 || page.Labels[0] != "原创" {
 		t.Errorf("Labels = %v", page.Labels)

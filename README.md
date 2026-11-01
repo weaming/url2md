@@ -20,11 +20,12 @@ fmt.Println(page.Title, page.Text, page.HTML)
 
 `Page.FrontMatter()` 输出 YAML 元信息（空字段省略），`Page.Markdown()` 输出正文。
 
-`Page` 字段：`Title`、`Author`、`SiteName`（公众号）、`PublishTime`、`IPLocation`、
-`Labels`（原创/转载）、`Description`、`Keywords`、`ImageURL`、`IconURL`、`Text`、`HTML`。
+`Page` 字段：`Title`、`Author`、`SiteName`（公众号）、`PublishTime`、`ModifiedTime`、
+`IPLocation`、`Labels`（原创/转载）、`SourceURL`（阅读原文）、`Description`、`Keywords`、
+`ImageURL`、`IconURL`、`Text`、`HTML`。
 
-微信的发布时间与 IP 属地由页面脚本渲染，`wechat.go` 从 `create_time` / `ct` 时间戳
-与 `ip_wording` 配置还原。
+微信的发布时间、修改时间、IP 属地与原文链接由页面脚本渲染，`wechat.go` 从
+`create_time` / `ct` / `modify_time` 时间戳、`ip_wording` 配置与 `msg_source_url` 还原。
 
 ## 命令行
 

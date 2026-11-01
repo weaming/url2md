@@ -9,18 +9,20 @@ import (
 type Page struct {
 	URL string
 
-	Title       string
-	Author      string
-	SiteName    string
-	PublishTime string
-	IPLocation  string
-	Labels      []string
-	Description string
-	Keywords    []string
-	ImageURL    string
-	ImageWidth  int
-	ImageHeight int
-	IconURL     string
+	Title        string
+	Author       string
+	SiteName     string
+	PublishTime  string
+	ModifiedTime string
+	IPLocation   string
+	Labels       []string
+	SourceURL    string
+	Description  string
+	Keywords     []string
+	ImageURL     string
+	ImageWidth   int
+	ImageHeight  int
+	IconURL      string
 
 	// Text 由 readability 提取的正文纯文本
 	Text string
@@ -43,9 +45,11 @@ func (p *Page) FrontMatter() string {
 	writeYAMLField(&b, "author", p.Author)
 	writeYAMLField(&b, "account", p.SiteName)
 	writeYAMLField(&b, "published", p.PublishTime)
+	writeYAMLField(&b, "modified", p.ModifiedTime)
 	writeYAMLField(&b, "ip_location", p.IPLocation)
 	writeYAMLField(&b, "description", p.Description)
 	writeYAMLField(&b, "image", p.ImageURL)
+	writeYAMLField(&b, "source_url", p.SourceURL)
 	writeYAMLRaw(&b, "labels", yamlList(p.Labels))
 	writeYAMLRaw(&b, "keywords", yamlList(p.Keywords))
 

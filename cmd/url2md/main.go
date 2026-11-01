@@ -74,10 +74,16 @@ func printMeta(page *url2md.Page) {
 		}
 	}
 	parts = append(parts, page.Labels...)
+	if page.ModifiedTime != "" {
+		parts = append(parts, "修改于 "+page.ModifiedTime)
+	}
 	if len(parts) > 0 {
 		fmt.Println(strings.Join(parts, " · "))
 	}
 
 	fmt.Println(page.URL)
+	if page.SourceURL != "" {
+		fmt.Println("阅读原文: " + page.SourceURL)
+	}
 	fmt.Println()
 }
