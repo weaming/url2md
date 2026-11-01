@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 
 	"github.com/charmbracelet/glamour"
 	"github.com/weaming/url2md"
@@ -20,7 +21,7 @@ func init() {
 }
 
 func main() {
-	rawMode := flag.Bool("raw", false, "输出原始 Markdown 内容")
+	rawMode := flag.Bool("raw", false, "输出原始 Markdown（正文前附 YAML front matter）")
 	flag.Parse()
 
 	if flag.NArg() < 1 {
@@ -39,9 +40,12 @@ func main() {
 	}
 
 	if *rawMode {
+		os.Stdout.WriteString(page.FrontMatter())
 		os.Stdout.WriteString(md)
 		return
 	}
+
+	printMeta(page)
 
 	renderer, err := glamour.NewTermRenderer(
 		glamour.WithAutoStyle(),
@@ -57,4 +61,23 @@ func main() {
 	}
 
 	fmt.Print(rendered)
+}
+
+// printMeta 在终端渲染前打印标题与元信息
+func printMeta(page *url2md.Page) {
+	fmt.Println(page.Title)
+
+	parts := make([]string, 0, 6)
+	for _, value := range []string{page.Author, page.SiteName, page.PublishTime, page.IPLocation} {
+		if value != "" {
+			parts = append(parts, value)
+		}
+	}
+	parts = append(parts, page.Labels...)
+	if len(parts) > 0 {
+		fmt.Println(strings.Join(parts, " · "))
+	}
+
+	fmt.Println(page.URL)
+	fmt.Println()
 }

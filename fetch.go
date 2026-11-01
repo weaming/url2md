@@ -71,17 +71,7 @@ func Parse(rawHTML, pageURL string) (*Page, error) {
 
 	// 站点规则命中时优先使用，失败再退回通用提取
 	if rule := findRule(baseURL); rule != nil {
-		if rawHTML, text := rule.extract(doc); rawHTML != "" {
-			page.HTML = rawHTML
-			page.Text = text
-
-			if title := firstText(doc, rule.Title); title != "" {
-				page.Title = title
-			}
-			if author := firstText(doc, rule.Author); author != "" {
-				page.Author = author
-			}
-
+		if rule.apply(doc, rawHTML, page) {
 			return page, nil
 		}
 	}

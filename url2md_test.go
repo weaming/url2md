@@ -102,12 +102,18 @@ const wechatHTML = `<!DOCTYPE html>
 <body>
 	<h1 id="activity-name">Super-agent 设计探索</h1>
 	<a id="js_name">某某团队</a>
+	<span id="copyright_logo">原创</span>
+	<span id="js_author_name">某某产品部</span>
 	<div id="js_content">
 		<p><span>第一段正文，说明背景。</span></p>
 		<h1><span>这是一段被写成标题的长正文，长度明显超过四十个字，用来验证标题降级逻辑是否生效，应该被输出成普通段落而不是 Markdown 标题。</span></h1>
 		<p><img data-src="https://mmbiz.qpic.cn/sz_mmbiz_jpg/cover/640?wx_fmt=jpeg" src="data:image/svg+xml;charset=utf8,%3Csvg%3E"></p>
 		<script>var noise = "不该出现";</script>
 	</div>
+	<script>
+		var ct = "1793449787";
+		window.ip_wording = { countryName: '中国', provinceName: '浙江' };
+	</script>
 </body>
 </html>`
 
@@ -120,8 +126,20 @@ func TestParseWechat(t *testing.T) {
 	if page.Title != "Super-agent 设计探索" {
 		t.Errorf("Title = %q", page.Title)
 	}
-	if page.Author != "某某团队" {
+	if page.Author != "某某产品部" {
 		t.Errorf("Author = %q", page.Author)
+	}
+	if page.SiteName != "某某团队" {
+		t.Errorf("SiteName = %q", page.SiteName)
+	}
+	if page.PublishTime != "2026年10月31日 20:29" {
+		t.Errorf("PublishTime = %q", page.PublishTime)
+	}
+	if page.IPLocation != "浙江" {
+		t.Errorf("IPLocation = %q", page.IPLocation)
+	}
+	if len(page.Labels) != 1 || page.Labels[0] != "原创" {
+		t.Errorf("Labels = %v", page.Labels)
 	}
 	if !strings.Contains(page.Text, "第一段正文") {
 		t.Errorf("Text 缺少正文: %q", page.Text)
@@ -156,5 +174,44 @@ func TestParseWechatFallback(t *testing.T) {
 	}
 	if !strings.Contains(page.Text, "该内容已被发布者删除") {
 		t.Errorf("Text = %q", page.Text)
+	}
+}
+
+func TestFrontMatter(t *testing.T) {
+	page := &Page{
+		URL:         "https://mp.weixin.qq.com/s/abcdefg",
+		Title:       `标题: 带 "引号"`,
+		Author:      "某某产品部",
+		SiteName:    "某某团队",
+		PublishTime: "2026年10月31日 20:29",
+		IPLocation:  "浙江",
+		Labels:      []string{"原创"},
+		Keywords:    []string{"a", "b"},
+	}
+
+	fm := page.FrontMatter()
+	if !strings.HasPrefix(fm, "---\n") || !strings.HasSuffix(fm, "---\n\n") {
+		t.Fatalf("front matter 结构不对:\n%s", fm)
+	}
+
+	for _, want := range []string{
+		`title: "标题: 带 \"引号\""`,
+		`published: "2026年10月31日 20:29"`,
+		`ip_location: "浙江"`,
+		`labels: ["原创"]`,
+		`keywords: ["a", "b"]`,
+	} {
+		if !strings.Contains(fm, want) {
+			t.Errorf("front matter 缺少 %q:\n%s", want, fm)
+		}
+	}
+}
+
+func TestFrontMatterSkipsEmpty(t *testing.T) {
+	page := &Page{URL: "https://example.com/post", Title: "标题"}
+	fm := page.FrontMatter()
+
+	if strings.Contains(fm, "author") || strings.Contains(fm, "labels") {
+		t.Errorf("空字段未被省略:\n%s", fm)
 	}
 }

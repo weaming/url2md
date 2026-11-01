@@ -16,7 +16,15 @@ fmt.Println(page.Title, page.Text, page.HTML)
 - `HTMLToMarkdown(html)`：把 HTML 片段转 Markdown
 
 正文提取以站点规则（`rules.go`）优先，未命中站点时退回 go-readability。
-目前内置：微信公众号 `mp.weixin.qq.com`（`#js_content`、懒加载图片、作者与标题）。
+目前内置：微信公众号 `mp.weixin.qq.com`（`#js_content` 正文、懒加载图片、标题/作者/公众号/发布时间/IP 属地/原创标签）。
+
+`Page.FrontMatter()` 输出 YAML 元信息（空字段省略），`Page.Markdown()` 输出正文。
+
+`Page` 字段：`Title`、`Author`、`SiteName`（公众号）、`PublishTime`、`IPLocation`、
+`Labels`（原创/转载）、`Description`、`Keywords`、`ImageURL`、`IconURL`、`Text`、`HTML`。
+
+微信的发布时间与 IP 属地由页面脚本渲染，`wechat.go` 从 `create_time` / `ct` 时间戳
+与 `ip_wording` 配置还原。
 
 ## 命令行
 
@@ -24,5 +32,5 @@ fmt.Println(page.Title, page.Text, page.HTML)
 go install github.com/weaming/url2md/cmd/url2md@latest
 
 url2md https://example.com/post      # 终端渲染
-url2md -raw https://example.com/post # 输出原始 Markdown
+url2md -raw https://example.com/post # 输出 YAML front matter + 原始 Markdown
 ```
